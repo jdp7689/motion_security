@@ -44,7 +44,7 @@ class MotionSecurityCamera():
         """
         while True:
             print "Waiting for motion..."
-            self.motion.wait_for_motion(timeout=False) # Will wait here
+            self.motion.wait_for_motion(timeout=-1)  # Will wait here
             for i in xrange(2):
                 time_string = time.strftime("%d%m%y%H%M%S")
                 self.record_video_and_send_to_google_drive(time_string)

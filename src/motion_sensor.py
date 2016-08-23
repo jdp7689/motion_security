@@ -27,31 +27,41 @@ INPUT_PIN = 7
 SLEEP_TIME_SECONDS = .1
 
 class MotionSensorTimeoutException(Exception):
+    """
+    Exception for if we timeout
+    """
     pass
 
 
 class MotionSensor():
+    """
+    Class for initialzing a motion sensor on the Pi
+    """
     def __init__(self, input_pin=INPUT_PIN):
+        """
+        :param input_pin: The input pin for reading the motion sensor
+        """
         self.input_pin = input_pin
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(input_pin, GPIO.IN)
 
     def wait_for_motion(self, timeout=5.0):
-        '''
-        This is a blocking function
+        """
+        Blocks until the motion sensor line goes high. Will raise MotionSensorTimeoutException if there is a timeout
 
-        param timeout: timeout in seconds. Set to false to block forever.
-        '''
+        :param timeout: (float) timeout, or -1 for no timeout
+        :return: None
+        """
         curr_time = 0.0
         while True:
             #Raise exception for timeout
-            if timeout is not False and float(curr_time)>timeout:
+            if timeout > 0 and float(curr_time) > timeout:
                 raise MotionSensorTimeoutException
             elif GPIO.input(self.input_pin):
                 break
             else:
                 time.sleep(SLEEP_TIME_SECONDS)
-            if timeout is not False:
+            if timeout > 0:
                 curr_time += SLEEP_TIME_SECONDS
 
 def main():

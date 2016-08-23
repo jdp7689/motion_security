@@ -24,21 +24,40 @@ SOFTWARE.
 '''
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+import os
+import sys
 
-class GoogleDriveHelper():
+
+class GoogleDriveHelperFileDoesNotExistException(Exception):
+    pass
+
+
+class GoogleDriveHelper:
+    """
+    Wrapper class for the pydrive project. Requires a Google Drive settings.yaml file.
+    """
     def __init__(self):
-        self.gauth = GoogleAuth()
-        self.gauth.LocalWebserverAuth()
-        self.drive = GoogleDrive(self.gauth)
+        g_auth = GoogleAuth()
+        g_auth.LocalWebserverAuth()
+        self.drive = GoogleDrive(g_auth)
 
     def upload_file(self, filename):
+        """
+        Class to upload a file
+        :param filename: Filename to upload
+        :return: None
+        :raises GoogleDriveHelperFileDoesNotExistException:
+        """
+        if not os.path.exists(filename):
+            raise GoogleDriveHelperFileDoesNotExistException("File does not exist!")
         file = self.drive.CreateFile()
         file.SetContentFile(filename)
         file.Upload()
 
+
 def main():
     drive = GoogleDriveHelper()
-    drive.upload_file("test.txt")
+    drive.upload_file(sys.argv[1])
     print "Upload successful!"
 
 if __name__ == '__main__':
