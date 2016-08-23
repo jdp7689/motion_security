@@ -26,30 +26,49 @@ import time
 from picamera import PiCamera
 import os
 
-class MotionCamera():
+class MotionSecurityCamera():
+
+    """Class for running the motion sensor-activated camera
+
+    """
     def __init__(self):
         self.motion = motion_sensor.MotionSensor()
         self.camera = PiCamera()
 
     def start(self):
+        """
+        Starts an infinite loop. Blocks on the motion sensor. Once the motion sensor returns,
+        the camera will record two clips.
+
+        :return: None
+        """
         while True:
             print "Waiting for motion..."
             self.motion.wait_for_motion(timeout=False) # Will wait here
             for i in xrange(2):
                 time_string = time.strftime("%d%m%y%H%M%S")
-                self.record_video_and_send(time_string)
+                self.record_video_and_send_to_google_drive(time_string)
             
-    def record_video_and_send(preface_string, record_time=15):
+    def record_video_and_send_to_google_drive(self, preface_string, record_time=15, delete_after_sending=True):
+        """
+        Records a security video with a preface string + description as the file name. Videos are recorded in h264.
+        After the video is finished recording, it is sent to a Google drive account.
+
+        :param preface_string: Leading string of file name
+        :param record_time: time to record in seconds
+        :return: None
+        """
         filename = preface_string + "_security_feed.h264"
         self.camera.start_recording(filename)
-        sleep(record_time)
+        time.sleep(record_time)
         self.camera.stop_recording()
         google_drive_helper.GoogleDriveHelper().upload_file(filename)
         print "Uploaded {} to Drive".format(filename)
-        os.remove(filename)
+        if delete_after_sending:
+            os.remove(filename)
 
 def main():
-    motion_cam = MotionCamera()
+    motion_cam = MotionSecurityCamera()
     motion_cam.start()
     
 
